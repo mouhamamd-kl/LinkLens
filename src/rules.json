@@ -1,0 +1,36 @@
+[
+    {
+        "id": 1,
+        "priority": 1,
+        "action": {
+            "type": "redirect",
+            "redirect": {
+                "extensionPath": "/locked.html"
+            }
+        },
+        "condition": {
+            "urlFilter": "||youtube.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "main_frame"
+            ]
+        }
+    },
+    {
+        "id": 2,
+        "priority": 1,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||tracker.example.net^",
+            "resourceTypes": [
+                "script",
+                "xmlhttprequest"
+            ]
+        }
+    }
+]

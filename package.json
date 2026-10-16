@@ -7,8 +7,10 @@
   "type": "module",
   "devDependencies": {
     "@types/chrome": "^0.0.287",
-    "typescript": "7.0.2",
-    "extension": "^4.1.33"
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "extension": "^4.1.33",
+    "typescript": "7.0.2"
   },
   "scripts": {
     "dev": "extension dev",
@@ -19,6 +21,9 @@
     "build:firefox": "extension build --browser firefox",
     "build:edge": "extension build --browser edge"
   },
-  "dependencies": {},
-  "packageManager": "npm@11.5.1"
+  "packageManager": "npm@11.5.1",
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  }
 }

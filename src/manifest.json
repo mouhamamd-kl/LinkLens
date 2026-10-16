@@ -1,8 +1,21 @@
 {
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ads",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
+  "action": {
+    "default_title": "My Ad Blocker"
+  },
   "$schema": "https://json.schemastore.org/chrome-manifest.json",
   "chromium:manifest_version": 3,
   "firefox:manifest_version": 2,
-  "version": "1.0.0",
   "firefox:browser_specific_settings": {
     "gecko": {
       "id": "{d27dc7ef-2d70-458f-bdf7-63210db9c5b0}",
@@ -53,10 +66,16 @@
   },
   "chromium:permissions": [
     "sidePanel",
-    "tabs"
+    "tabs",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "host_permissions"
   ],
   "firefox:permissions": [
-    "tabs"
+    "tabs",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "host_permissions"
   ],
   "background": {
     "chromium:service_worker": "background.ts",
@@ -71,6 +90,16 @@
       ],
       "js": [
         "content/scripts.ts"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "locked.html"
+      ],
+      "matches": [
+        "<all_urls>"
       ]
     }
   ]
