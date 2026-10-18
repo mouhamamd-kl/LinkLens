@@ -6,6 +6,13 @@
  * (top 121, sides 104, bottom 66) rather than a derived spacing scale —
  * the design system has none.
  */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 html,
 body,
 #root {
@@ -115,4 +122,50 @@ body {
 
 .locked_actionbar a {
     text-decoration: none;
+}
+
+/*
+ * Narrow screens — Firefox for Android, phone-sized windows.
+ *
+ * Everything above is the measured Figma 165:999 layout and is left alone;
+ * this only relaxes the two rules that cannot compress: the 160px warning icon
+ * and the side-by-side action bar, whose two labels together are wider than a
+ * phone. Below the breakpoint the action bar stacks, which also stops the
+ * anchors overflowing their container.
+ */
+@media (max-width: 640px) {
+    .locked {
+        padding: 24px;
+        gap: 16px;
+    }
+
+    .locked_content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .locked_warning {
+        width: 96px;
+        height: 96px;
+    }
+
+    .locked_body {
+        margin-top: 16px;
+        gap: 16px;
+    }
+
+    .locked_footer {
+        gap: 24px;
+    }
+
+    .locked_actionbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .locked_actionbar a {
+        justify-content: center;
+    }
 }

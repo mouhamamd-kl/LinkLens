@@ -163,7 +163,19 @@ if (isFirefoxLike) {
   // Firefox refuses sidebarAction.open() outside a user input handler, and a
   // message listener is not one, so the toolbar click is the only route.
   browser.browserAction.onClicked.addListener(() => {
-    browser.sidebarAction.open()
+    void (async () => {
+      // Firefox for Android has no sidebar surface at all: the sidebar_action
+      // manifest key is ignored and sidebarAction is undefined, so calling it
+      // throws rather than degrading. Reuse the tab fallback Safari uses.
+      const { os } = await browser.runtime.getPlatformInfo()
+      if (os === 'android') {
+        openSidebarTab()
+
+        return
+      }
+
+      browser.sidebarAction.open()
+    })()
   })
 }
 
