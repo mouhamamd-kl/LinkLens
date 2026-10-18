@@ -1,0 +1,36 @@
+/*
+ * Card — Figma frames 164:528 / 162:421 / 163:483 / 163:473.
+ * fill Surface/default, cornerRadius 10, padding 12, itemSpacing 16.
+ */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 6px;
+  border-radius: 10px;
+  background-color: var(--ll-surface-default);
+}
+
+.card--start {
+  align-items: flex-start;
+}
+
+.card--center {
+  align-items: center;
+}
+
+/* The 1px rules between the two stat blocks and under the warning card. */
+.divider {
+  width: 100%;
+  height: 1px;
+  margin: 0;
+  border: 0;
+  background-color: var(--ll-border-default);
+}
+
+.divider--vertical {
+  width: 1px;
+  height: 44px;
+  flex: none;
+}

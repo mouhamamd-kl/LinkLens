@@ -1,0 +1,67 @@
+/*
+ * Checkbox — Figma instance I169:1078;49:284 inside wrapper 169:1078.
+ * The 36x36 wrapper is padding 8 around a 20x20 control, filled Surface/action
+ * with a Border/action stroke and cornerRadius 4.
+ *
+ * The real input stays in the tree for keyboard and screen-reader support; the
+ * visible control is painted by .checkbox_box.
+ */
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-family: var(--ll-font-family);
+  font-size: var(--ll-paragraph-md-size);
+  line-height: var(--ll-paragraph-md-lh);
+  font-weight: var(--ll-font-weight-regular);
+  color: var(--ll-text-placeholder);
+}
+
+.checkbox_input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.checkbox_box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--ll-border-action);
+  border-radius: 4px;
+  background-color: var(--ll-surface-default);
+  color: var(--ll-surface-default);
+  transition: background-color var(--ll-duration-fast) var(--ll-ease-standard),
+    border-color var(--ll-duration-fast) var(--ll-ease-standard);
+}
+
+.checkbox:hover .checkbox_box {
+  border-color: var(--ll-border-action-hover);
+}
+
+.checkbox_input:checked + .checkbox_box {
+  background-color: var(--ll-surface-action);
+}
+
+.checkbox_input:focus-visible + .checkbox_box {
+  outline: 2px solid var(--ll-border-focus);
+  outline-offset: 2px;
+}
+
+/* The mark only mounts on check, so this reads as a draw-in rather than a
+   replay of an animation the user has already seen. */
+.checkbox_box svg {
+  animation: ll-check-pop var(--ll-duration-base) var(--ll-ease-out);
+}
+
+.checkbox_label {
+  /* Figma carries a trailing space in the string; trim it in the layout. */
+  white-space: nowrap;
+}

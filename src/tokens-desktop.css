@@ -1,0 +1,18 @@
+/*
+ * Desktop type overrides — Figma `Responsive-Desktop`.
+ *
+ * Only h1-h4 size and line-height differ between breakpoints; everything else
+ * (h5, h6, all paragraph sizes, and ALL paragraph-spacing values) is identical
+ * and stays in fonts.css. Import this only from a full-width page.
+ */
+
+:root {
+  --ll-h1-size: 60px;
+  --ll-h1-lh: 1.2;
+  --ll-h2-size: 48px;
+  --ll-h2-lh: 1.1667;
+  --ll-h3-size: 40px;
+  --ll-h3-lh: 1.2;
+  --ll-h4-size: 32px;
+  --ll-h4-lh: 1.25;
+}

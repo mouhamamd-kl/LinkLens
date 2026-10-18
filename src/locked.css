@@ -1,0 +1,118 @@
+/*
+ * Layout for the blocked interstitial — Figma frame 165:999.
+ *
+ * The Figma frame is absolutely positioned on a 1440x1024 artboard with no
+ * container, so these values are the measured insets from that artboard
+ * (top 121, sides 104, bottom 66) rather than a derived spacing scale —
+ * the design system has none.
+ */
+html,
+body,
+#root {
+    height: 100%;
+}
+
+
+
+body {
+    background-color: var(--ll-grey-100);
+    color: var(--ll-grey-700);
+    margin: 0;
+    font-family: var(--ll-font-family);
+}
+
+.locked {
+    box-sizing: border-box;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-content: space-around;
+    padding: 40px;
+    gap: 20px;
+}
+
+.locked_content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    /* 26px, the measured gap between the icon's bottom (281) and the
+     description (307). */
+    gap: 26px;
+}
+
+.locked_heading {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.locked_heading_title {
+    margin: 0;
+    font-size: var(--ll-h3-size);
+    line-height: var(--ll-h3-lh);
+    font-weight: var(--ll-font-weight-semibold);
+    color: var(--ll-grey-800);
+}
+
+.locked_warning {
+    display: block;
+    width: 160px;
+    height: 160px;
+    /* Without this the icon shrinks inside the .locked_content row when the
+       heading is wide. */
+    flex: none;
+}
+
+.locked_description {
+    margin: 0;
+    font-size: var(--ll-paragraph-md-size);
+    line-height: var(--ll-paragraph-md-lh);
+    font-weight: var(--ll-font-weight-medium);
+    color: var(--ll-grey-700);
+    text-align: start;
+}
+
+.locked_origin {
+    margin: 0;
+    font-size: var(--ll-paragraph-sm-size);
+    line-height: var(--ll-paragraph-sm-lh);
+    font-weight: var(--ll-font-weight-regular);
+    color: var(--ll-grey-500);
+}
+
+/* Wraps the description and the blocked host below the heading row. */
+.locked_body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    margin-top: 24px;
+    max-width: 1270px;
+}
+
+/* Figma leaves 411px between the description (y=307) and the checkbox (y=718),
+   reading as deliberate bottom-weighting. margin-top:auto reproduces that
+   without hardcoding a void. */
+.locked_footer {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 40px;
+    margin-top: auto;
+}
+
+.locked_actionbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px;
+    border-radius: 32px;
+    background-color: var(--ll-grey-50);
+}
+
+
+.locked_actionbar a {
+    text-decoration: none;
+}

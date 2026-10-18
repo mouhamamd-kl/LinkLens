@@ -67,15 +67,20 @@
   "chromium:permissions": [
     "sidePanel",
     "tabs",
+    "storage",
+    "webNavigation",
     "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess",
-    "host_permissions"
+    "declarativeNetRequestWithHostAccess"
   ],
   "firefox:permissions": [
     "tabs",
+    "storage",
+    "webNavigation",
     "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess",
-    "host_permissions"
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": [
+    "<all_urls>"
   ],
   "background": {
     "chromium:service_worker": "background.ts",

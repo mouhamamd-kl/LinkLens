@@ -1,0 +1,57 @@
+/*
+ * Toggle — Figma `.SwitchButton` (162:350): 128x68, radius 96, padding 8,
+ * 48x48 knob.
+ *
+ * Two states, per the component set:
+ *   unselected  track Surface/default (white),  knob Surface/action (purple)
+ *   selected    track Surface/action (purple),  knob Surface/default (white)
+ *
+ * The knob travels by 64px, which is 128 - (2 x 8 padding) - 48. It moves with
+ * translateX rather than justify-content so the slide actually interpolates —
+ * justify-content is not animatable.
+ */
+
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 128px;
+  height: 68px;
+  flex: none;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 96px;
+  cursor: pointer;
+  transition: background-color var(--ll-duration-base) var(--ll-ease-standard),
+    border-color var(--ll-duration-base) var(--ll-ease-standard);
+}
+
+.toggle--off {
+  background-color: var(--ll-grey-200);
+}
+
+.toggle--on {
+  background-color: var(--ll-surface-action);
+  border-color: var(--ll-border-action);
+}
+
+.toggle_knob {
+  display: block;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 50%;
+  background-color: var(--ll-surface-action);
+  transition: transform var(--ll-duration-base) var(--ll-ease-out),
+    background-color var(--ll-duration-base) var(--ll-ease-standard);
+}
+
+.toggle--on .toggle_knob {
+  transform: translateX(64px);
+  background-color: var(--ll-surface-default);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--ll-border-focus);
+  outline-offset: 2px;
+}

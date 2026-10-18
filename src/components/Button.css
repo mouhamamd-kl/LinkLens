@@ -1,0 +1,118 @@
+/*
+ * Button — Figma component `Button`, at the four sizes it is instantiated at.
+ * Layout: horizontal, centre/centre, itemSpacing 8, cornerRadius 24 (except xs).
+ *
+ * The design system has no spacing scale, so the paddings are the literal values
+ * read off each instance's layout object rather than derived tokens.
+ *
+ * Labels follow Mapped: the outline surface uses Text/action (purple), the solid
+ * surface uses an unbound #F7F6F8 rather than Text/on-action's pure white.
+ */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--ll-border-action);
+  border-radius: 24px;
+  font-family: var(--ll-font-family);
+  letter-spacing: var(--ll-tracking);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--ll-duration-fast) var(--ll-ease-standard),
+    border-color var(--ll-duration-fast) var(--ll-ease-standard),
+    transform var(--ll-duration-fast) var(--ll-ease-standard);
+}
+
+.button--outline {
+  background-color: var(--ll-surface-default);
+  color: var(--ll-text-action);
+}
+
+.button--solid {
+  background-color: var(--ll-surface-action);
+  color: var(--ll-text-on-action-soft);
+}
+
+/*
+ * Figma 164:664 carries neither fill nor stroke, so the transparent variant is
+ * the authored state rather than an omission. The hover tint is ours: without
+ * it there is no visual signal that the row is clickable at all.
+ */
+.button--ghost {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--ll-text-action);
+}
+
+.button--outline:hover {
+  background-color: var(--ll-surface-action-hover-light);
+  border-color: var(--ll-border-action-hover);
+}
+
+.button--solid:hover {
+  background-color: var(--ll-surface-action-hover);
+  border-color: var(--ll-border-action-hover);
+}
+
+.button--ghost:hover {
+  background-color: var(--ll-surface-action-hover-light);
+  border-color: transparent;
+}
+
+.button:active {
+  transform: scale(0.97);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.button:disabled:hover {
+  background-color: var(--ll-surface-default);
+  border-color: var(--ll-border-action);
+}
+
+.button--solid:disabled:hover {
+  background-color: var(--ll-surface-action);
+}
+
+.button--lg {
+  padding: 12px 24px;
+  font-size: var(--ll-paragraph-xsm-size);
+  line-height: var(--ll-paragraph-xsm-lh);
+  font-weight: var(--ll-font-weight-semibold);
+}
+
+.button--md {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 12px;
+  font-size: var(--ll-paragraph-xsm-size);
+  line-height: var(--ll-paragraph-xsm-lh);
+  font-weight: var(--ll-font-weight-semibold);
+}
+
+.button--sm {
+  min-height: 30px;
+  padding: 4px 6px;
+  font-size: var(--ll-paragraph-overline-size);
+  line-height: var(--ll-paragraph-overline-lh);
+  font-weight: var(--ll-font-weight-regular);
+}
+
+.button--xs {
+  min-height: 20px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: var(--ll-paragraph-overline-size);
+  line-height: var(--ll-paragraph-overline-lh);
+  font-weight: var(--ll-font-weight-regular);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--ll-border-focus);
+  outline-offset: 2px;
+}

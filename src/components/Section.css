@@ -1,0 +1,77 @@
+/*
+ * Section — Figma 165:990 and 163:474.
+ * Header: horizontal, itemSpacing 2, centre-aligned. Caret 20x20.
+ */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.section_header {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  color: var(--ll-grey-700);
+}
+
+.section_title {
+  margin: 0;
+  font-size: var(--ll-paragraph-xsm-size);
+  font-weight: var(--ll-font-weight-semibold);
+  color: var(--ll-grey-700);
+}
+
+.section_toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color var(--ll-duration-fast) var(--ll-ease-standard);
+}
+
+.section_toggle:hover {
+  background-color: var(--ll-surface-action-hover-light);
+}
+
+.section_toggle svg {
+  transition: transform var(--ll-duration-slow) var(--ll-ease-out);
+}
+
+.section[data-open='false'] .section_toggle svg {
+  transform: rotate(-90deg);
+}
+
+.section_toggle:focus-visible {
+  outline: 2px solid var(--ll-border-focus);
+  outline-offset: 2px;
+}
+
+/*
+ * 0fr -> 1fr animates without a known height. The inner wrapper needs
+ * overflow:hidden or the content refuses to collapse.
+ */
+.section_body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--ll-duration-slow) var(--ll-ease-out);
+}
+
+.section[data-open='false'] .section_body {
+  grid-template-rows: 0fr;
+}
+
+.section_body_inner {
+  overflow: hidden;
+  min-height: 0;
+}

@@ -1,72 +1,258 @@
-/* @import 'sakura.css'; */
+/*
+ * Side panel — Figma frame 162:323 ("Extension", 319x919).
+ * Vertical stack, padding 10, itemSpacing 12.
+ *
+ * The design system has no spacing scale, so every gap and padding below is a
+ * literal read off a frame's layout object rather than a derived token.
+ */
 
-:root {
-  --sidebar-margin: 1rem;
-  --sidebar-bg: #0a0c10;
-  --sidebar-text: #c9c9c9;
-  --sidebar-link: #e5e7eb;
-  --sidebar-border: #c9c9c9;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
-  background-color: var(--sidebar-bg);
-  color: var(--sidebar-text);
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, 'Noto Sans', sans-serif;
-  /* The margin insets the panel, so a full-viewport height would push the
-     content below centre and overflow the panel by twice the margin. */
-  height: calc(100vh - 2 * var(--sidebar-margin));
-  margin: var(--sidebar-margin);
-  border-radius: 6px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
+  margin: 0;
+  /* The panel is a fixed 319px (the Figma artboard). Clamp the horizontal axis
+     so a classic vertical scrollbar can't push it past the viewport. */
+  overflow-x: hidden;
+  background-color: var(--ll-surface-page);
+  color: var(--ll-text-body);
+  font-family: var(--ll-font-family);
+  letter-spacing: var(--ll-tracking);
 }
 
-.sidebar_app {
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  min-height: 100vh;
+  padding: 10px;
+}
+
+/* Header (162:326) — horizontal, padding 8/16, gap 10, space-between. */
+.panel_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 16px;
+}
+
+.panel_header_left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panel_wordmark {
+  font-size: var(--ll-paragraph-sm-size);
+  line-height: var(--ll-paragraph-sm-lh);
+  font-weight: var(--ll-font-weight-semibold);
+  color: var(--ll-grey-700);
+}
+
+.panel_version {
+  padding: 2px 4px;
+  border-radius: 8px;
+  background-color: var(--ll-surface-disabled);
+  font-size: var(--ll-paragraph-xsm-size);
+  line-height: var(--ll-paragraph-xsm-lh);
+  font-weight: var(--ll-font-weight-semibold);
+  color: var(--ll-text-placeholder);
+}
+
+/* The URL strip (171:1164) — 275x24, radius 8, fill #F3F2F5. */
+.panel_url {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 24px;
+  padding: 4px;
+  border-radius: 8px;
+  background-color: var(--ll-grey-200);
+  color: var(--ll-text-action);
+}
+
+/* The text truncation now lives in CopyableLink.css as .copy-link_text. */
+
+/* Section headers now live in components/Section.css. */
+.panel_card_title {
+  margin: 0;
+  font-size: var(--ll-paragraph-xsm-size);
+  line-height: var(--ll-paragraph-xsm-lh);
+  font-weight: var(--ll-font-weight-semibold);
+  color: var(--ll-grey-700);
+}
+
+/* Supporting copy under the warning actions. */
+.panel_note {
+  margin: 0;
+  font-size: var(--ll-paragraph-overline-size);
+  line-height: var(--ll-paragraph-overline-lh);
+  color: var(--ll-grey-400);
+}
+
+.panel_proceed {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 1rem;
-  text-align: center;
-  max-height: 100%;
-  overflow-y: auto;
+  gap: 8px;
+  width: 100%;
 }
 
-.sidebar_logo {
-  display: block;
-  width: 72px;
-  margin: 0 auto 1rem;
+.panel_proceed_actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
 }
 
-.sidebar_title {
-  font-size: 1.85em;
-  line-height: 1.1;
-  font-weight: 700;
+/* Protection card body — label above the switch. */
+.panel_protection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.panel_protection-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--ll-paragraph-xsm-size);
+  line-height: var(--ll-paragraph-xsm-lh);
+  color: var(--ll-grey-700);
+}
+
+.panel_protection-status svg {
+  color: var(--ll-icon-action);
+}
+
+.panel_stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Trailing "view all". The underline wipes in from the left rather than
+   blinking on, so the hit target reads as interactive before the hover. */
+.panel_link {
+  position: relative;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--ll-paragraph-overline-size);
+  line-height: var(--ll-paragraph-overline-lh);
+  color: var(--ll-text-action);
+  cursor: pointer;
+}
+
+.panel_link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--ll-duration-base) var(--ll-ease-out);
+}
+
+.panel_link:hover::after,
+.panel_link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.panel_link:focus-visible {
+  outline: 2px solid var(--ll-border-focus);
+  outline-offset: 2px;
+}
+
+.panel_activity {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   margin: 0;
-  text-align: center;
+  padding: 0;
+  list-style: none;
+  width: 100%;
 }
 
-.sidebar_description {
-  font-size: small;
-  margin: 0.5rem 0 0;
-  text-align: center;
+.panel_activity_row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
 }
 
-.sidebar_description a {
-  text-decoration: none;
-  border-bottom: 2px solid var(--sidebar-border);
-  color: var(--sidebar-link);
-  margin: 0;
+.panel_activity_head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
 }
 
-.sidebar_page_title {
-  font-size: small;
-  margin: 1rem 0 0;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--sidebar-border);
-  text-align: center;
-  word-break: break-word;
+.panel_activity_meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.panel_activity_title {
+  font-size: var(--ll-paragraph-overline-size);
+  line-height: var(--ll-paragraph-overline-lh);
+  color: var(--ll-grey-600);
+}
+
+.panel_activity_time {
+  font-size: var(--ll-paragraph-overline-size);
+  line-height: var(--ll-paragraph-overline-lh);
+  font-weight: var(--ll-font-weight-semibold);
+  color: var(--ll-text-body);
+}
+
+.panel_activity_action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/*
+ * Entrance. Cards rise and fade in sequence, 40ms apart. `backwards` fill mode
+ * keeps each card hidden during its own delay so nothing flashes in first.
+ */
+.panel > * {
+  animation: ll-rise var(--ll-duration-slow) var(--ll-ease-out) backwards;
+}
+
+.panel > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.panel > *:nth-child(2) {
+  animation-delay: 40ms;
+}
+
+.panel > *:nth-child(3) {
+  animation-delay: 80ms;
+}
+
+.panel > *:nth-child(4) {
+  animation-delay: 120ms;
+}
+
+.panel > *:nth-child(5) {
+  animation-delay: 160ms;
 }

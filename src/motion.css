@@ -1,0 +1,75 @@
+/*
+ * Motion tokens and shared keyframes.
+ *
+ * The Figma file specifies no animation — get_motion_context returns
+ * coverage "complete" with animatedNodes 0 on both roots — so everything here
+ * is a proposal rather than a translation.
+ *
+ * Only `transform` and `opacity` are animated. Nothing touches height, margin
+ * or width, so no transition reflows the layout mid-flight. The one exception
+ * is the collapsible section, which uses the grid-template-rows 0fr/1fr trick
+ * precisely so it avoids animating a measured height.
+ */
+
+:root {
+  --ll-duration-fast: 120ms;
+  --ll-duration-base: 180ms;
+  --ll-duration-slow: 280ms;
+
+  --ll-ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ll-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes ll-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ll-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ll-check-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(-8deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * Respect the OS setting. Collapsing to 0.01ms rather than 0 keeps the
+ * transitionend events that JS listeners may depend on firing.
+ */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

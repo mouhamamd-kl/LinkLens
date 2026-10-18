@@ -1,0 +1,61 @@
+/*
+ * Tag — Figma component "Priority Option".
+ * Layout: horizontal, centre/centre, itemSpacing 4.
+ * Fill follows Mapped Surface/*, label colour follows Mapped Text/*.
+ */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ll-font-family);
+  letter-spacing: var(--ll-tracking);
+  white-space: nowrap;
+  border-radius: 4px;
+}
+
+.tag--lg {
+  padding: 4px 8px;
+  font-size: var(--ll-paragraph-md-size);
+  line-height: var(--ll-paragraph-lg-lh);
+}
+
+.tag--sm {
+  min-height: 20px;
+  padding: 2px 6px;
+  font-size: var(--ll-paragraph-overline-size);
+  line-height: var(--ll-paragraph-overline-lh);
+}
+
+.tag--semibold {
+  font-weight: var(--ll-font-weight-semibold);
+}
+
+.tag--regular {
+  font-weight: var(--ll-font-weight-regular);
+}
+
+.tag--error {
+  background-color: var(--ll-surface-error);
+  color: var(--ll-text-error);
+}
+
+.tag--warning {
+  background-color: var(--ll-surface-warning);
+  color: var(--ll-text-warning);
+}
+
+.tag--success {
+  background-color: var(--ll-surface-success);
+  color: var(--ll-text-success);
+}
+
+.tag--information {
+  background-color: var(--ll-surface-information);
+  color: var(--ll-text-information);
+}
+
+.tag--neutral {
+  background-color: var(--ll-surface-disabled);
+  color: var(--ll-text-disabled);
+}

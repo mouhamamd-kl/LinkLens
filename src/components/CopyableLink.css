@@ -1,0 +1,63 @@
+/*
+ * CopyableLink — the icon button inside the panel's URL strip (Figma 171:1164).
+ * The strip itself keeps its Figma spec: 275x24, radius 8, fill #F3F2F5, gap 12.
+ */
+
+.copy-link_button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  /* Idle: no colour of its own, so the icon inherits the strip's Text/action
+     purple and stays consistent with the URL beside it. */
+  color: inherit;
+  cursor: pointer;
+  transition: color var(--ll-duration-base) var(--ll-ease-standard),
+    background-color var(--ll-duration-fast) var(--ll-ease-standard);
+}
+
+.copy-link_button:hover {
+  background-color: var(--ll-surface-action-hover-light);
+}
+
+/*
+ * The one state that cannot rely on inheritance — without an explicit override
+ * the checkmark would stay purple and keep reading as "clickable" rather than
+ * "done".
+ */
+.copy-link_button[data-copied='true'] {
+  color: var(--ll-text-success);
+}
+
+.copy-link_button:focus-visible {
+  outline: 2px solid var(--ll-border-focus);
+  outline-offset: 2px;
+}
+
+/* The incoming checkmark scales in rather than snapping into place. */
+.copy-link_button svg {
+  animation: ll-pop var(--ll-duration-base) var(--ll-ease-out);
+}
+
+.copy-link_text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Announced to assistive tech, never painted. */
+.copy-link_status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

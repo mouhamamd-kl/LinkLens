@@ -14,6 +14,112 @@ const isSafariLike =
   import.meta.env.EXTENSION_PUBLIC_BROWSER === 'safari' ||
   import.meta.env.EXTENSION_PUBLIC_BROWSER === 'webkit-based'
 
+//instead of all this nonesense
+
+// first we are defining the consts for working with them
+// the BLOCKED_KEY_PREFIX is for saving tabs urls so when we are blocking the page 
+// and we want the url for it but the url in the page is the extension 
+// so we save it in the session which is so much easy
+
+const BLOCKED_KEY_PREFIX = 'blocked:'
+
+// the rules.json file have ids for the websites we are blocking 
+const BYPASS_ID_BASE = 900_000
+const BYPASS_ID_RANGE = 90_000
+
+// the block key tab 
+function blockedKey(tabId: number): string {
+  return `${BLOCKED_KEY_PREFIX}${tabId}`
+}
+
+/** when we want to allow a website so we do make an Id for it . */
+function bypassRuleId(domain: string): number {
+  let hash = 0
+  for (const char of domain) {
+    hash = (hash * 31 + char.charCodeAt(0)) | 0
+  }
+  return BYPASS_ID_BASE + (Math.abs(hash) % BYPASS_ID_RANGE)
+}
+
+chrome.webNavigation?.onBeforeNavigate.addListener((details) => {
+  // frameId 0 is the top-level navigation; subframes are not the blocked page.
+  if (details.frameId !== 0) return
+  if (!/^https?:/.test(details.url)) return
+
+  void chrome.storage.session.set({
+    [blockedKey(details.tabId)]: { url: details.url, at: Date.now() },
+  })
+})
+
+/*
+ * Remembers the last real web page each tab was on, so the interstitial can
+ * show where "Go Back to safety" would land.
+ *
+ * onCommitted rather than onBeforeNavigate: a committed URL is one that
+ * actually loaded. The blocked URL is redirected and never commits, and the
+ * interstitial is a chrome-extension:// URL that fails the scheme test below,
+ * so neither overwrites the value.
+ */
+const LAST_PAGE_KEY_PREFIX = 'lastPage:'
+
+function lastPageKey(tabId: number): string {
+  return `${LAST_PAGE_KEY_PREFIX}${tabId}`
+}
+
+chrome.webNavigation?.onCommitted.addListener((details) => {
+  if (details.frameId !== 0) return
+  if (!/^https?:/.test(details.url)) return
+
+  void chrome.storage.session.set({
+    [lastPageKey(details.tabId)]: details.url,
+  })
+})
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  void chrome.storage.session.remove(blockedKey(tabId))
+  void chrome.storage.session.remove(lastPageKey(tabId))
+})
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (!message || message.action !== 'proceed') return
+
+  const { domain, permanent } = message as { domain: string; permanent: boolean }
+  const ruleId = bypassRuleId(domain)
+
+  // Mirrors every resourceType the blocking rule in rules.json covers. A
+  // main_frame-only allow would let the document through with its images and
+  // XHR still blocked, so the page would load broken.
+  const { ResourceType, RuleActionType } = chrome.declarativeNetRequest
+  const resourceTypes: chrome.declarativeNetRequest.ResourceType[] = [
+    ResourceType.MAIN_FRAME,
+    ResourceType.SUB_FRAME,
+    ResourceType.SCRIPT,
+    ResourceType.IMAGE,
+    ResourceType.XMLHTTPREQUEST,
+  ]
+
+  const rule: chrome.declarativeNetRequest.Rule = {
+    id: ruleId,
+    // `allow` outranks `redirect` at equal priority, so no bump is needed.
+    priority: 1,
+    action: { type: RuleActionType.ALLOW },
+    condition: { urlFilter: `||${domain}^`, resourceTypes },
+  }
+
+  const update = permanent
+    ? chrome.declarativeNetRequest.updateDynamicRules
+    : chrome.declarativeNetRequest.updateSessionRules
+
+  // remove-then-add keeps repeat clicks idempotent. Session rules already die
+  // with the browser, so there is no expiry timer — and a setTimeout could not
+  // survive service-worker termination anyway.
+  update({ removeRuleIds: [ruleId], addRules: [rule] }, () => {
+    if (chrome.runtime.lastError) {
+      console.error('[LinkLens] bypass rule failed', chrome.runtime.lastError)
+    }
+  })
+})
+
 // Safari has no side panel surface, so the sidebar page opens in a tab.
 let sidebarTabId: number | undefined
 
@@ -21,7 +127,7 @@ function openSidebarTab() {
   const url = chrome.runtime.getURL('sidebar/index.html')
 
   const openNewTab = () => {
-    chrome.tabs.create({url}, (tab) => {
+    chrome.tabs.create({ url }, (tab) => {
       sidebarTabId = tab?.id
     })
   }
@@ -35,7 +141,7 @@ function openSidebarTab() {
     return
   }
 
-  chrome.tabs.update(knownTabId, {active: true}, (tab) => {
+  chrome.tabs.update(knownTabId, { active: true }, (tab) => {
     if (chrome.runtime.lastError || !tab) {
       openNewTab()
 
@@ -44,7 +150,7 @@ function openSidebarTab() {
 
     // Selecting a tab in another window leaves that window behind the one the
     // user is looking at, so raise it too.
-    chrome.windows?.update(tab.windowId, {focused: true})
+    chrome.windows?.update(tab.windowId, { focused: true })
   })
 }
 
@@ -72,7 +178,7 @@ if (isSafariLike) {
 if (!isFirefoxLike && !isSafariLike) {
   // setPanelBehavior only affects FUTURE action clicks, registering it
   // inside onClicked would swallow the first toolbar click.
-  chrome.sidePanel?.setPanelBehavior({openPanelOnActionClick: true})
+  chrome.sidePanel?.setPanelBehavior({ openPanelOnActionClick: true })
 
   // The side panel API only exists in Chromium. Firefox opens the sidebar in
   // the listener above, so this listener is compiled out of gecko builds.
@@ -83,13 +189,13 @@ if (!isFirefoxLike && !isSafariLike) {
     // allowed inside the user gesture that the content-script click carries, and
     // a tabs.query callback outlives it: the panel then silently refuses to open.
     // sender.tab is the tab the click came from, so no lookup is needed at all.
-    chrome.sidePanel?.setPanelBehavior({openPanelOnActionClick: true})
+    chrome.sidePanel?.setPanelBehavior({ openPanelOnActionClick: true })
 
     const tabId = sender.tab?.id
     if (!chrome.sidePanel?.open || tabId === undefined) return
 
     try {
-      chrome.sidePanel?.open({tabId})
+      chrome.sidePanel?.open({ tabId })
     } catch (error) {
       console.error(error)
     }

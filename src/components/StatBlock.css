@@ -1,0 +1,33 @@
+/*
+ * StatBlock — Figma 162:436. Vertical stack, itemSpacing 12, centre/centre.
+ *
+ * The two label colours are raw Figma fills with no Mapped binding behind them
+ * (#29272B and #161516), so they reference the grey ramp directly rather than
+ * a semantic token that would imply one exists.
+ */
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex: 1;
+  font-family: var(--ll-font-family);
+  letter-spacing: var(--ll-tracking);
+  text-align: center;
+}
+
+.stat_label {
+  font-size: var(--ll-paragraph-overline-size);
+  line-height: var(--ll-paragraph-overline-lh);
+  font-weight: var(--ll-font-weight-regular);
+  color: var(--ll-grey-600);
+}
+
+.stat_value {
+  font-size: var(--ll-paragraph-xsm-size);
+  line-height: var(--ll-paragraph-xsm-lh);
+  font-weight: var(--ll-font-weight-semibold);
+  color: var(--ll-text-body);
+}
