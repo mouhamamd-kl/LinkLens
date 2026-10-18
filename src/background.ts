@@ -1,3 +1,5 @@
+import { api } from './lib/webapi'
+
 console.log(
   '[From the background context] Hello from the background worker/script!'
 )
@@ -26,6 +28,23 @@ const BLOCKED_KEY_PREFIX = 'blocked:'
 // the rules.json file have ids for the websites we are blocking 
 const BYPASS_ID_BASE = 900_000
 const BYPASS_ID_RANGE = 90_000
+
+/*
+ * @types/chrome declares ResourceType and RuleActionType as string *enums*,
+ * which reject the plain string literals. The literals have to be what we send:
+ * Firefox exposes no RuleActionType enum at all, so reading `RuleActionType.ALLOW`
+ * there threw "can't access property ALLOW" and the bypass rule was never built.
+ * The enum members are these same strings, so Chrome accepts them too.
+ *
+ * This alias exists so the literals stay typo-checked without depending on an
+ * enum that only exists on one of the two engines.
+ */
+type ResourceTypeValue =
+  | 'main_frame'
+  | 'sub_frame'
+  | 'script'
+  | 'image'
+  | 'xmlhttprequest'
 
 // the block key tab 
 function blockedKey(tabId: number): string {
@@ -80,35 +99,40 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   void chrome.storage.session.remove(lastPageKey(tabId))
 })
 
-chrome.runtime.onMessage.addListener(async (message) => {
+// `api`, not `chrome`: Firefox's chrome.* namespace is callback-only under MV2,
+// so a listener registered on it would not surface its returned promise and the
+// page's sendMessage would resolve before the rule below was installed.
+api.runtime.onMessage.addListener(async (message) => {
   if (!message || message.action !== 'proceed') return
 
   const { domain, permanent } = message as { domain: string; permanent: boolean }
   const ruleId = bypassRuleId(domain)
+  console.log('[LinkLens] install bypass', { ruleId, domain, permanent })
+
+  const dnr = api.declarativeNetRequest
 
   // Mirrors every resourceType the blocking rule in rules.json covers. A
   // main_frame-only allow would let the document through with its images and
   // XHR still blocked, so the page would load broken.
-  const { ResourceType, RuleActionType } = chrome.declarativeNetRequest
-  const resourceTypes: chrome.declarativeNetRequest.ResourceType[] = [
-    ResourceType.MAIN_FRAME,
-    ResourceType.SUB_FRAME,
-    ResourceType.SCRIPT,
-    ResourceType.IMAGE,
-    ResourceType.XMLHTTPREQUEST,
-  ]
+  const resourceTypes = [
+    'main_frame',
+    'sub_frame',
+    'script',
+    'image',
+    'xmlhttprequest',
+  ] satisfies ResourceTypeValue[]
 
-  const rule: chrome.declarativeNetRequest.Rule = {
+  // One cast, at assembly. See ResourceTypeValue above for why the literals
+  // cannot be typed as the enums directly.
+  const rule = {
     id: ruleId,
     // `allow` outranks `redirect` at equal priority, so no bump is needed.
     priority: 1,
-    action: { type: RuleActionType.ALLOW },
+    action: { type: 'allow' },
     condition: { urlFilter: `||${domain}^`, resourceTypes },
-  }
+  } as unknown as chrome.declarativeNetRequest.Rule
 
-  const update = permanent
-    ? chrome.declarativeNetRequest.updateDynamicRules
-    : chrome.declarativeNetRequest.updateSessionRules
+  const update = permanent ? dnr.updateDynamicRules : dnr.updateSessionRules
 
   // remove-then-add keeps repeat clicks idempotent. Session rules already die
   // with the browser, so there is no expiry timer — and a setTimeout could not
@@ -120,6 +144,7 @@ chrome.runtime.onMessage.addListener(async (message) => {
   // back on the interstitial because the rule was still being installed.
   try {
     await update({ removeRuleIds: [ruleId], addRules: [rule] })
+    console.log('[LinkLens] bypass installed', ruleId)
   } catch (error) {
     console.error('[LinkLens] bypass rule failed', error)
   }

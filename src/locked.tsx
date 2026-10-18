@@ -8,6 +8,7 @@ import Checkbox from './components/Checkbox'
 import Tag from './components/Tag'
 import { DangerousIcon, ShieldIcon } from './components/icons'
 import warningArt from './warning.svg'
+import { api } from './lib/webapi'
 import './tokens.css'
 import './fonts.css'
 import './tokens-desktop.css'
@@ -34,17 +35,25 @@ function BlockedApp() {
 
     void (async () => {
       try {
-        const [tab] = await chrome.tabs.query({
+        console.log('[LinkLens] reading blocked state')
+        const [tab] = await api.tabs.query({
           active: true,
           currentWindow: true,
         })
+        console.log('[LinkLens] tab', tab?.id)
         if (tab?.id === undefined || cancelled) return
 
         const blockedKey = `blocked:${tab.id}`
         const previousKey = `lastPage:${tab.id}`
         // One call for both keys. They have different shapes — blockedKey holds
         // an object, previousKey a bare string — hence the asymmetric reads.
-        const stored = await chrome.storage.session.get([blockedKey, previousKey])
+        const stored = await api.storage.session.get([blockedKey, previousKey])
+        console.log('[LinkLens] keys', {
+          blockedKey,
+          previousKey,
+          blocked: stored[blockedKey],
+          previous: stored[previousKey],
+        })
         if (!cancelled) {
           setBlockedUrl(stored[blockedKey]?.url ?? null)
           setPreviousUrl(stored[previousKey] ?? null)
@@ -84,11 +93,14 @@ function BlockedApp() {
     setPending(true)
 
     try {
-      await chrome.runtime.sendMessage({
+      // '->' rather than an arrow: logcat is latin-1, so a UTF-8 arrow renders as mojibake.
+console.log('[LinkLens] proceed ->', { hostname, permanent: dontWarn, pending })
+      await api.runtime.sendMessage({
         action: 'proceed',
         domain: hostname,
         permanent: dontWarn,
       })
+      console.log('[LinkLens] rule installed, navigating')
 
       // replace() rather than assign() so the interstitial does not sit in
       // history — pressing back from the page would return to it.
