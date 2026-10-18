@@ -28,6 +28,7 @@ function BlockedApp() {
   // was opened directly rather than via a redirect.
   const [blockedUrl, setBlockedUrl] = React.useState<string | null>(null)
   const [previousUrl, setPreviousUrl] = React.useState<string | null>(null)
+  const [pending, setPending] = React.useState(false)
   React.useEffect(() => {
     let cancelled = false
 
@@ -72,16 +73,35 @@ function BlockedApp() {
   // The page navigates itself rather than asking the background to do it: the
   // allow rule has to be installed before the request leaves, and keeping the
   // navigation here avoids a flash of an extension URL.
-  const proceed = async () => {
-    if (!blockedUrl || !hostname) return
+  const proceed = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+    // The anchor carries a real href so hovering previews the destination, so
+    // the default navigation has to be stopped here. Nothing navigates on its
+    // own — this handler does, once, after the allow rule exists.
+    event.preventDefault()
 
-    await chrome.runtime.sendMessage({
-      action: 'proceed',
-      domain: hostname,
-      permanent: dontWarn,
-    });
+    if (!blockedUrl || !hostname || pending) return
 
-    window.location.replace(blockedUrl)
+    setPending(true)
+
+    try {
+      await chrome.runtime.sendMessage({
+        action: 'proceed',
+        domain: hostname,
+        permanent: dontWarn,
+      })
+
+      // replace() rather than assign() so the interstitial does not sit in
+      // history — pressing back from the page would return to it.
+      window.location.replace(blockedUrl)
+    } catch (error) {
+      console.error('[LinkLens] could not lift the block', error)
+      setPending(false)
+    }
+  }
+
+  const goBack = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault()
+    window.history.back()
   }
 
   return (
@@ -118,10 +138,8 @@ function BlockedApp() {
           <a
             className="button button--outline button--lg"
             href={blockedUrl ?? '#'}
-            onClick={(event) => {
-              event.preventDefault()
-              void proceed()
-            }}
+            onClick={(event) => void proceed(event)}
+            aria-disabled={pending || undefined}
             title={blockedUrl ?? undefined}
           >
             <DangerousIcon />
@@ -131,12 +149,7 @@ function BlockedApp() {
           <a
             className="button button--solid button--lg"
             href={previousUrl ?? '#'}
-            onClick={(event) => {
-              // Preview the destination on hover, but let the browser's own history
-              // handle the trip — that is what "back" means.
-              event.preventDefault()
-              window.history.back()
-            }}
+            onClick={goBack}
             title={previousUrl ?? undefined}
           >
             <ShieldIcon />

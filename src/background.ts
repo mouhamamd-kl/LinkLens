@@ -80,7 +80,7 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   void chrome.storage.session.remove(lastPageKey(tabId))
 })
 
-chrome.runtime.onMessage.addListener((message) => {
+chrome.runtime.onMessage.addListener(async (message) => {
   if (!message || message.action !== 'proceed') return
 
   const { domain, permanent } = message as { domain: string; permanent: boolean }
@@ -113,11 +113,16 @@ chrome.runtime.onMessage.addListener((message) => {
   // remove-then-add keeps repeat clicks idempotent. Session rules already die
   // with the browser, so there is no expiry timer — and a setTimeout could not
   // survive service-worker termination anyway.
-  update({ removeRuleIds: [ruleId], addRules: [rule] }, () => {
-    if (chrome.runtime.lastError) {
-      console.error('[LinkLens] bypass rule failed', chrome.runtime.lastError)
-    }
-  })
+  //
+  // Awaited, and in the promise form rather than the callback form. The page
+  // navigates the instant sendMessage resolves, so the rule has to exist by
+  // then. A callback version returned immediately and the first click landed
+  // back on the interstitial because the rule was still being installed.
+  try {
+    await update({ removeRuleIds: [ruleId], addRules: [rule] })
+  } catch (error) {
+    console.error('[LinkLens] bypass rule failed', error)
+  }
 })
 
 // Safari has no side panel surface, so the sidebar page opens in a tab.
