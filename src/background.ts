@@ -1,5 +1,6 @@
 import { api } from './lib/webapi'
-import { startRulesSync } from './lib/rules'
+import { recordBlock } from './lib/activity'
+import { REMOTE_ID_MAX, REMOTE_ID_MIN, startRulesSync, syncRules } from './lib/rules'
 
 console.log(
   '[From the background context] Hello from the background worker/script!'
@@ -107,11 +108,105 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   void chrome.storage.session.remove(lastPageKey(tabId))
 })
 
+/** The static ruleset declared in manifest.json as declarative_net_request. */
+const STATIC_RULESET_ID = 'ads'
+
+const PROTECTION_KEY = 'settings:protection'
+
+/**
+ * Protection is two rule sources, not one.
+ *
+ * updateEnabledRulesets only reaches static rulesets, so switching it off does
+ * nothing to the remote rules installed as dynamic ones — protection would sit
+ * half-on while the panel claimed off. Those have to be cleared by hand.
+ *
+ * Switching back on refetches rather than restoring from a local stash, so the
+ * remote half needs the network; if it is down, the static rules still resume
+ * immediately and the remote set refills on the next scheduled sync.
+ */
+async function setProtection(enabled: boolean): Promise<void> {
+  await api.declarativeNetRequest.updateEnabledRulesets(
+    enabled
+      ? { enableRulesetIds: [STATIC_RULESET_ID] }
+      : { disableRulesetIds: [STATIC_RULESET_ID] },
+  )
+
+  if (enabled) {
+    await syncRules()
+  } else {
+    const existing = await api.declarativeNetRequest.getDynamicRules()
+    await api.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: existing
+        .filter((rule) => rule.id >= REMOTE_ID_MIN && rule.id <= REMOTE_ID_MAX)
+        .map((rule) => rule.id),
+    })
+  }
+
+  await api.storage.local.set({ [PROTECTION_KEY]: enabled })
+}
+
+/**
+ * The browser can reset a ruleset's enabled state to the manifest default after
+ * an extension update, so the stored preference is reapplied at startup rather
+ * than trusted — the same reason the rules alarm has to be recreated.
+ */
+async function reconcileProtection(): Promise<void> {
+  const stored = await api.storage.local.get(PROTECTION_KEY)
+  const enabled = stored[PROTECTION_KEY] !== false
+
+  try {
+    await api.declarativeNetRequest.updateEnabledRulesets(
+      enabled
+        ? { enableRulesetIds: [STATIC_RULESET_ID] }
+        : { disableRulesetIds: [STATIC_RULESET_ID] },
+    )
+  } catch (error) {
+    console.error('[LinkLens] could not reconcile protection', error)
+  }
+}
+
+void reconcileProtection()
+
 // `api`, not `chrome`: Firefox's chrome.* namespace is callback-only under MV2,
 // so a listener registered on it would not surface its returned promise and the
 // page's sendMessage would resolve before the rule below was installed.
 api.runtime.onMessage.addListener(async (message) => {
-  if (!message || message.action !== 'proceed') return
+  if (!message) return
+
+  if (message.action === 'recordBlock') {
+    const { url } = message as { url: string }
+
+    try {
+      await recordBlock(url)
+
+      return { ok: true }
+    } catch (error) {
+      // Logged rather than thrown. The interstitial does not act on the result,
+      // and a rejected listener would surface there as an unhandled rejection
+      // on a fire-and-forget call.
+      console.error('[LinkLens] could not record the block', error)
+
+      return { ok: false }
+    }
+  }
+
+  if (message.action === 'setProtection') {
+    const { enabled } = message as { enabled: boolean }
+    console.log('[LinkLens] setProtection', enabled)
+
+    try {
+      await setProtection(enabled)
+    } catch (error) {
+      // The panel reverts on a missing {ok}, so the failure has to reject
+      // rather than resolve with a false result.
+      console.error('[LinkLens] setProtection failed', error)
+      throw error
+    }
+
+    return { ok: true }
+  }
+
+  if (message.action !== 'proceed') return
 
   const { domain, permanent } = message as { domain: string; permanent: boolean }
   const ruleId = bypassRuleId(domain)

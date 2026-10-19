@@ -18,9 +18,13 @@ const REFRESH_HOURS = 12
  * Id bands. bypassRuleId() in background.ts puts "Continue anyway" rules at
  * 900_000+, so remote rules live below that: a refresh can then remove exactly
  * its own rules without touching the sites a user chose to allow.
+ *
+ * Exported because the protection toggle has to clear the same band when it
+ * switches protection off — updateEnabledRulesets only reaches static
+ * rulesets, so the dynamic half has to be removed by hand.
  */
-const REMOTE_ID_MIN = 10_000
-const REMOTE_ID_MAX = 899_999
+export const REMOTE_ID_MIN = 10_000
+export const REMOTE_ID_MAX = 899_999
 
 /**
  * Dynamic rule ceiling. 5000 is the cap that holds on every target: Chromium

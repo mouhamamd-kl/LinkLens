@@ -5,6 +5,8 @@ interface ToggleProps {
   checked: boolean
   onChange?: (checked: boolean) => void
   label: string
+  /** Dims the control and suppresses the click — used while state is loading. */
+  disabled?: boolean
 }
 
 /*
@@ -14,15 +16,30 @@ interface ToggleProps {
  *
  * That is far larger than a conventional switch; it is reproduced as authored.
  */
-export default function Toggle({checked, onChange, label}: ToggleProps) {
+export default function Toggle({checked, onChange, label, disabled = false}: ToggleProps) {
+  const classes = [
+    'toggle',
+    checked ? 'toggle--on' : 'toggle--off',
+    disabled ? 'toggle--disabled' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-disabled={disabled || undefined}
       aria-label={label}
-      className={checked ? 'toggle toggle--on' : 'toggle toggle--off'}
-      onClick={() => onChange?.(!checked)}
+      className={classes}
+      disabled={disabled}
+      onClick={() => {
+        // Belt and braces: the `disabled` attribute already suppresses this,
+        // but the guard keeps the handler honest if it is ever wired elsewhere.
+        if (disabled) return
+        onChange?.(!checked)
+      }}
     >
       <span className="toggle_knob" />
     </button>

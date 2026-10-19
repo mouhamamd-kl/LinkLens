@@ -196,6 +196,15 @@ body {
   width: 100%;
 }
 
+/* Stands in for the rows when nothing has been blocked yet, so the section
+ * keeps its shape instead of collapsing to an empty list. */
+.panel_activity_empty {
+  color: var(--ll-text-muted);
+  font-size: var(--ll-paragraph-sm-size);
+  line-height: var(--ll-paragraph-sm-lh);
+  font-weight: var(--ll-font-weight-regular);
+}
+
 .panel_activity_head {
   display: flex;
   align-items: center;

@@ -72,9 +72,22 @@ function BlockedApp() {
           blocked: stored[blockedKey],
           previous: stored[previousKey],
         }))
+        const blocked = stored[blockedKey]?.url ?? null
+
         if (!cancelled) {
-          setBlockedUrl(stored[blockedKey]?.url ?? null)
+          setBlockedUrl(blocked)
           setPreviousUrl(stored[previousKey] ?? null)
+        }
+
+        // Reaching this page at all means the redirect fired, which is the only
+        // trustworthy proof of a block — onBeforeNavigate fires for every
+        // navigation and cannot tell a blocked one from a successful one.
+        //
+        // `blocked`, not the `blockedUrl` state: this effect runs once on mount
+        // with [] deps, so the state variable in this closure is the initial
+        // null and the guard would never pass.
+        if (blocked) {
+          void api.runtime.sendMessage({ action: 'recordBlock', url: blocked })
         }
       } catch (error) {
         // Previously silent, which made a missing `storage` permission look

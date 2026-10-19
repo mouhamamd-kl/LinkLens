@@ -55,3 +55,14 @@
   outline: 2px solid var(--ll-border-focus);
   outline-offset: 2px;
 }
+
+/*
+ * Shown while the panel is still reading the stored preference. Matches
+ * .button--disabled: dimmed and not-allowed, but no pointer-events:none — that
+ * would swallow the event before the cursor resolves and the control would look
+ * broken rather than busy.
+ */
+.toggle--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
