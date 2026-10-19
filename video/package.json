@@ -1,0 +1,23 @@
+{
+  "name": "linklens-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "3-minute animated hackathon video for LinkLens",
+  "scripts": {
+    "dev": "remotion studio",
+    "render": "remotion render LinkLensVideo out/linklens.mp4",
+    "render:preview": "remotion render LinkLensVideo out/linklens-preview.mp4 --scale=0.5 --crf=28",
+    "still": "remotion still LinkLensVideo out/still.png"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.536",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.536"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^5.6.0"
+  }
+}

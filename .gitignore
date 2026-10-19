@@ -37,3 +37,9 @@ extension-env.d.ts
 .env*
 !.env.example
 !.env.*.example
+
+# hackathon video (remotion)
+# node_modules and package-lock.json are already covered above.
+video/out
+video/.remotion
+video/remotion.config.ts.bak

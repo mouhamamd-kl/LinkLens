@@ -70,13 +70,15 @@
     "storage",
     "webNavigation",
     "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess"
+    "declarativeNetRequestWithHostAccess",
+    "alarms"
   ],
   "firefox:permissions": [
     "tabs",
     "storage",
     "webNavigation",
-    "declarativeNetRequest"
+    "declarativeNetRequest",
+    "alarms"
   ],
   "host_permissions": [
     "<all_urls>"

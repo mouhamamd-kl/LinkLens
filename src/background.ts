@@ -1,8 +1,14 @@
 import { api } from './lib/webapi'
+import { startRulesSync } from './lib/rules'
 
 console.log(
   '[From the background context] Hello from the background worker/script!'
 )
+
+// Registers the onInstalled / onStartup / alarms listeners for the remote
+// ruleset. Declared before the browser-detection constants because the sync
+// logic has to be live regardless of which engine this bundle targets.
+startRulesSync()
 
 // Named one by one so the bundler can fold each build down to a single
 // branch. waterfox and librewolf are gecko, and used to fall to chromium.
@@ -151,6 +157,9 @@ api.runtime.onMessage.addListener(async (message) => {
     console.error('[LinkLens] bypass rule failed', error)
   }
 })
+
+// …after the existing listeners
+startRulesSync()
 
 // Safari has no side panel surface, so the sidebar page opens in a tab.
 let sidebarTabId: number | undefined
