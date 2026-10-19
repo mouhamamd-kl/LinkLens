@@ -23,13 +23,19 @@
         "id": 2,
         "priority": 1,
         "action": {
-            "type": "block"
+            "type": "redirect",
+            "redirect": {
+                "extensionPath": "/locked.html"
+            }
         },
         "condition": {
-            "urlFilter": "||tracker.example.net^",
+            "urlFilter": "||mgeko.cc^",
             "resourceTypes": [
                 "script",
-                "xmlhttprequest"
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "main_frame"
             ]
         }
     }

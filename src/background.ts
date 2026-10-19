@@ -89,6 +89,8 @@ chrome.webNavigation?.onCommitted.addListener((details) => {
   if (details.frameId !== 0) return
   if (!/^https?:/.test(details.url)) return
 
+  console.log('[LinkLens] lastPage', details.tabId, details.url)
+
   void chrome.storage.session.set({
     [lastPageKey(details.tabId)]: details.url,
   })

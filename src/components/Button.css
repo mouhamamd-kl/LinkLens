@@ -20,6 +20,13 @@
   letter-spacing: var(--ll-tracking);
   white-space: nowrap;
   cursor: pointer;
+
+  /* Keeps the label from being selected. On a touch screen a double-tap is
+     what selects text, and the highlight on a control reads as a rendering
+     fault; the label has no use being copied from a button either. Scoped here
+     so the Tag, heading and blocked hostname stay selectable. */
+  user-select: none;
+
   transition: background-color var(--ll-duration-fast) var(--ll-ease-standard),
     border-color var(--ll-duration-fast) var(--ll-ease-standard),
     transform var(--ll-duration-fast) var(--ll-ease-standard);
@@ -93,6 +100,20 @@
   font-size: var(--ll-paragraph-xsm-size);
   line-height: var(--ll-paragraph-xsm-lh);
   font-weight: var(--ll-font-weight-semibold);
+}
+
+/*
+ * Dimmed state for the interstitial's action bar.
+ *
+ * The controls are anchors so hovering previews the destination, and an anchor
+ * cannot be truly disabled — locked.tsx drops its href and suppresses the click
+ * instead. pointer-events is deliberately left alone here: it would swallow the
+ * event before the cursor resolves, losing the not-allowed feedback that is the
+ * only thing telling the user why the control is dimmed.
+ */
+.button--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .button--sm {
