@@ -2,20 +2,17 @@ import React from 'react'
 import Button from '../components/Button'
 import Card, { Divider } from '../components/Card'
 import CopyableLink from '../components/CopyableLink'
-import IconButton from '../components/IconButton'
 import Section from '../components/Section'
 import StatBlock from '../components/StatBlock'
 import Tag from '../components/Tag'
 import Toggle from '../components/Toggle'
 import {
   ClockIcon,
-  DangerousIcon,
-  InfoIcon,
-  SettingsIcon,
   ShieldIcon,
 } from '../components/icons'
+import logoUrl from '../images/logo.svg'
 import { api } from '../lib/webapi'
-import { getActivity, getStats, hostnameOf, relativeTime } from '../lib/activity'
+import { defangUrl, getActivity, getStats, hostnameOf, relativeTime } from '../lib/activity'
 import type { ActivityEntry, BlockStats } from '../lib/activity'
 
 /*
@@ -30,7 +27,6 @@ import type { ActivityEntry, BlockStats } from '../lib/activity'
  */
 
 const VERSION = 'v1.0.0'
-const BLOCKED_URL = 'https://stitch.google.com/projects/17593243975137907603'
 
 /** storage.local key for the protection preference. Mirrored in background.ts. */
 const PROTECTION_KEY = 'settings:protection'
@@ -80,45 +76,54 @@ function Header() {
   return (
     <header className="panel_header">
       <div className="panel_header_left">
-        <span className="panel_wordmark">LinkLens</span>
+        {/* The white-text lockup, since the panel is dark. The wordmark is part
+            of the artwork, so alt carries the name the pixels no longer do. */}
+        <img className="panel_wordmark" src={logoUrl} alt="LinkLens" />
         <span className="panel_version">{VERSION}</span>
       </div>
-
-      <IconButton label="Settings">
-        <SettingsIcon size={20} />
-      </IconButton>
     </header>
   )
 }
 
-function WarningCard() {
+/**
+ * The last blocked URL, not the current tab's.
+ *
+ * The activity log is stored newest-first, so entries[0] is the most recent
+ * block — reusing it avoids a second storage key for the same fact, and it
+ * survives the panel being closed between blocks.
+ *
+ * Null before anything has been blocked, which is also the case when the panel
+ * is opened on a page that was never blocked at all.
+ */
+function WarningCard({ lastUrl }: { lastUrl: string | null }) {
+  // Defanged once and used for all three surfaces. The tooltip mattered as much
+  // as the clipboard: a raw URL in a title attribute is still a URL the browser
+  // will happily hand to a click or a middle-click.
+  const safeUrl = lastUrl ? defangUrl(lastUrl) : null
+
   return (
     <Card align="center">
       <Tag tone="error" size="sm" radius={12}>
         Suspected phishing
       </Tag>
 
-      {/* The strip truncates to fit 275px; the title carries the full URL and
-          the icon copies it. The text stays selectable. */}
-      <div className="panel_url" title={BLOCKED_URL}>
-        <CopyableLink value={BLOCKED_URL} label={BLOCKED_URL} />
-      </div>
-
-      <Button variant="solid" size="md" icon={<ShieldIcon size={20} />}>
-        Go Back to safety
-      </Button>
+      {safeUrl ? (
+        <>
+          {/* The strip truncates to fit 275px; the title carries the full URL
+              and the icon copies it. The text stays selectable. */}
+          <div className="panel_url" title={safeUrl}>
+            <CopyableLink value={safeUrl} label={lastUrl ? lastUrl : ""} />
+          </div>
+        </>
+      ) : (
+        <p className="panel_note">No blocked pages yet</p>
+      )}
 
       <p className="panel_note">False alarm? Review warning options below</p>
 
       <div className="panel_proceed">
-        <p className="panel_note">Proceed only if you trust this site</p>
-
         <div className="panel_proceed_actions">
-          <Button variant="outline" size="sm" icon={<DangerousIcon size={20} />}>
-            Continue anyway
-          </Button>
-
-          <Button variant="outline" size="sm" aria-hidden={true} tabIndex={-1} >
+          <Button variant="outline" size="sm" aria-hidden={true} tabIndex={-1}>
             Report false positive
           </Button>
         </div>
@@ -225,23 +230,35 @@ function StatsCard({ stats }: { stats: BlockStats }) {
   )
 }
 
+/**
+ * How many rows the card draws. Lower than the 25 the log stores in
+ * storage.local — the card is a scannable summary, and the remainder is what
+ * "view all" would eventually reach for.
+ */
+const ACTIVITY_RENDER_LIMIT = 8
+
 function ActivityCard({ entries }: { entries: ActivityEntry[] }) {
+  // Newest-first already, so slicing the head keeps the most recent.
+  const visible = entries.slice(0, ACTIVITY_RENDER_LIMIT)
+
   return (
     <Card align="start">
       <Section
         icon={<ClockIcon size={16} />}
         title="Recent activity"
         action={
-          <button type="button" className="panel_link">
+          // A real link so it navigates whatever surface the panel is in —
+          // Firefox sidebar, Chromium side panel, or a tab on Android.
+          <a className="panel_link" href="../pages/all.html">
             view all
-          </button>
+          </a>
         }
       >
         <ul className="panel_activity">
-          {entries.length === 0 ? (
+          {visible.length === 0 ? (
             <li className="panel_activity_empty">No blocks yet</li>
           ) : (
-            entries.map((entry, index) => (
+            visible.map((entry, index) => (
               <li
                 // at alone is not unique enough — two blocks in the same
                 // millisecond would collide.
@@ -264,12 +281,6 @@ function ActivityCard({ entries }: { entries: ActivityEntry[] }) {
                     Blocked
                   </Tag>
                 </div>
-
-                <div className="panel_activity_action">
-                  <Button variant="outline" size="xs">
-                    view details
-                  </Button>
-                </div>
               </li>
             ))
           )}
@@ -285,7 +296,8 @@ export default function SidebarApp() {
   return (
     <main className="panel">
       <Header />
-      <WarningCard />
+      {/* Newest-first, so the head of the log is the most recent block. */}
+      <WarningCard lastUrl={entries[0]?.url ?? null} />
       <ProtectionCard />
       <StatsCard stats={stats} />
       <ActivityCard entries={entries} />

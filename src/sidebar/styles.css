@@ -47,11 +47,13 @@ body {
   gap: 10px;
 }
 
+/* The logo lockup, 120x42 in the source SVG. Height is set rather than width so
+   the shield and wordmark keep their aspect ratio; the text inside the artwork
+   occupies only 12 of those 42 units, which is why this reads small. */
 .panel_wordmark {
-  font-size: var(--ll-paragraph-sm-size);
-  line-height: var(--ll-paragraph-sm-lh);
-  font-weight: var(--ll-font-weight-semibold);
-  color: var(--ll-grey-700);
+  display: block;
+  height: 28px;
+  width: auto;
 }
 
 .panel_version {
@@ -107,7 +109,10 @@ body {
 .panel_proceed_actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  /* Centred rather than space-between: the row held two buttons, and with only
+     Report false positive left, space-between would pin it to the start of a
+     full-width row and leave it lopsided against the centred card. */
+  justify-content: center;
   gap: 8px;
   width: 100%;
 }
@@ -141,11 +146,11 @@ body {
   width: 100%;
 }
 
-/* Trailing "view all". The underline wipes in from the left rather than
-   blinking on, so the hit target reads as interactive before the hover. */
-.panel_link {
+/* Trailing "view all" and the page header's "Back". Shared because the
+   underline wipe and the type are identical; only the placement differs. */
+.panel_link,
+.panel_back {
   position: relative;
-  margin-left: auto;
   padding: 0;
   border: 0;
   background: none;
@@ -154,9 +159,17 @@ body {
   line-height: var(--ll-paragraph-overline-lh);
   color: var(--ll-text-action);
   cursor: pointer;
+  text-decoration: none;
 }
 
-.panel_link::after {
+/* "view all" sits at the end of a section header; "Back" at the start of the
+   page header, so only the former needs pushing right. */
+.panel_link {
+  margin-left: auto;
+}
+
+.panel_link::after,
+.panel_back::after {
   content: '';
   position: absolute;
   left: 0;
@@ -170,11 +183,14 @@ body {
 }
 
 .panel_link:hover::after,
-.panel_link:focus-visible::after {
+.panel_link:focus-visible::after,
+.panel_back:hover::after,
+.panel_back:focus-visible::after {
   transform: scaleX(1);
 }
 
-.panel_link:focus-visible {
+.panel_link:focus-visible,
+.panel_back:focus-visible {
   outline: 2px solid var(--ll-border-focus);
   outline-offset: 2px;
 }
@@ -231,11 +247,6 @@ body {
   line-height: var(--ll-paragraph-overline-lh);
   font-weight: var(--ll-font-weight-semibold);
   color: var(--ll-text-body);
-}
-
-.panel_activity_action {
-  display: flex;
-  justify-content: flex-end;
 }
 
 /*

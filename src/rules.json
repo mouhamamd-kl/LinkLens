@@ -9,7 +9,7 @@
             }
         },
         "condition": {
-            "urlFilter": "||youtube.com^",
+            "urlFilter": "||0a37-190-2-155-231.ngrok-free.app^",
             "resourceTypes": [
                 "script",
                 "image",

@@ -94,6 +94,38 @@ export function hostnameOf(url: string): string {
   }
 }
 
+/**
+ * Defangs a URL so it cannot survive being forwarded as a live link.
+ *
+ * The abuse-desk convention: break the host's dots. youtube.com becomes
+ * youtube[.]com — inert as a URL, still readable by someone who needs to
+ * recognise it. A blocked URL is routinely pasted into a chat to ask "is this
+ * real?", and without this the warning is the thing that makes the link live.
+ *
+ * Only the host is touched. The scheme and path are inert without a host, so
+ * defanging them would cost readability for nothing.
+ */
+export function defangUrl(url: string): string {
+  const schemeEnd = url.indexOf('://')
+
+  if (schemeEnd === -1) return url
+
+  const scheme = url.slice(0, schemeEnd + 3)
+  const rest = url.slice(schemeEnd + 3)
+
+  // Stop at the path/query/fragment so only the authority is rewritten.
+  const boundary = rest.search(/[/?#]/)
+  const authority = boundary === -1 ? rest : rest.slice(0, boundary)
+  const tail = boundary === -1 ? '' : rest.slice(boundary)
+
+  // Userinfo, if present, is not part of the host.
+  const at = authority.lastIndexOf('@')
+  const userinfo = at === -1 ? '' : authority.slice(0, at + 1)
+  const host = at === -1 ? authority : authority.slice(at + 1)
+
+  return `${scheme}${userinfo}${host.replace(/\./g, '[.]')}${tail}`
+}
+
 /** Matches the "2 min ago" shape the panel was drawn with. */
 export function relativeTime(at: number, now = Date.now()): string {
   const minutes = Math.round((now - at) / 60_000)

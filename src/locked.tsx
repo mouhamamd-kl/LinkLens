@@ -212,7 +212,7 @@ function BlockedApp() {
 
         <p className="locked_origin">
           Blocked Website:
-          <b> {hostname ?? "suspicious-example.com"}</b>
+          <b> {hostname ?? "suspicious website"}</b>
         </p>
       </div>
 

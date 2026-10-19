@@ -8,7 +8,9 @@ import { api } from './webapi'
  * dynamic rules.
  */
 
-const REMOTE_RULES_URL = 'https://your-backend.example/rules.json'
+// Dev URL: the Laravel rules API (php artisan serve). On-device testing with
+// the Android phone can't reach 127.0.0.1 — swap in this machine's LAN IP.
+const REMOTE_RULES_URL = 'http://127.0.0.1:8000/api/rules'
 
 /** Floor before the server can ask us to check again. Matches uBO's 4 hours. */
 const MIN_REFRESH_HOURS = 4
@@ -98,7 +100,22 @@ function readRefreshHours(body: unknown): number {
     : REFRESH_HOURS
 }
 
-export async function syncRules(): Promise<void> {
+/** One sync at a time: onInstalled, onStartup and the alarm can all fire in
+ * the same tick, and each duplicate re-downloads the list and churns every
+ * installed rule. Later callers join the run already in flight. */
+let inFlight: Promise<void> | null = null
+
+export function syncRules(): Promise<void> {
+  if (inFlight) return inFlight
+
+  inFlight = runSync().finally(() => {
+    inFlight = null
+  })
+
+  return inFlight
+}
+
+async function runSync(): Promise<void> {
   // api, not chrome: under Manifest V2 on Firefox the chrome.* namespace is
   // callback-only and returns undefined, so destructuring the result throws and
   // — with the caller doing `void syncRules()` — becomes an unhandled rejection
@@ -123,16 +140,25 @@ export async function syncRules(): Promise<void> {
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
     const body = await res.json()
-    const rules = normalise(body)
+
+    // The server sends { updateAfter, rules }; a bare array is still
+    // accepted so a hand-authored file keeps working.
+    const list: unknown[] = Array.isArray(body)
+      ? body
+      : Array.isArray((body as { rules?: unknown } | null)?.rules)
+        ? (body as { rules: unknown[] }).rules
+        : []
+
+    const rules = normalise(list)
 
     // An empty or unusable response would otherwise be applied and wipe a
     // working ruleset. Treat it as a failure so the current one survives.
     if (rules.length === 0) throw new Error('no usable rules in response')
 
-    if (Array.isArray(body) && body.length > rules.length) {
+    if (list.length > rules.length) {
       console.warn(
-        `[rules] response of ${body.length} exceeds the ${MAX_REMOTE_RULES}-rule cap; ` +
-          `${body.length - rules.length} were dropped`,
+        `[rules] response of ${list.length} exceeds the ${MAX_REMOTE_RULES}-rule cap; ` +
+          `${list.length - rules.length} were dropped`,
       )
     }
 
